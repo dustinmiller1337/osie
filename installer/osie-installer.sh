@@ -128,33 +128,33 @@ cat <<-EOF | grep -v '^\s*$'
 EOF
 
 until docker info; do
-	sleep 3
+ sleep 3
 done
 
 reason='unable to fetch/load osie image'
 if ! docker images "osie:$arch" | grep osie >/dev/null; then
-	curl "${packet_base_url:-http://install.$facility.packet.net/misc/osie/current}/osie-$arch.tar.gz" |
-		docker load
+ curl "${packet_base_url:-http://install.$facility.packet.net/misc/osie/current}/osie-$arch.tar.gz" |
+  docker load
 fi
 
 case $state:$slug in
 deprovision:*)
-	modprobe sg
-	script=/home/packet/deprovision.sh
-	;;
+ modprobe sg
+ script=/home/packet/deprovision.sh
+ ;;
 *freebsd*)
-	modprobe fuse
-	script=/home/packet/frosie.sh
-	;;
+ modprobe fuse
+ script=/home/packet/frosie.sh
+ ;;
 *virtuozzo*)
-	script=/home/packet/vosie.sh
-	;;
+ script=/home/packet/vosie.sh
+ ;;
 *windows*)
-	script=/home/packet/wosie.sh
-	;;
+ script=/home/packet/wosie.sh
+ ;;
 *)
-	script=/home/packet/osie.sh
-	;;
+ script=/home/packet/osie.sh
+ ;;
 esac
 
 # stop mdev from messing with us once and for all
@@ -163,33 +163,33 @@ rm -f /sbin/mdev
 # make sure messages show up in all consoles
 # we skip first because it's already going there via stdout
 other_consoles=$(
-	tr ' ' '\n' </proc/cmdline |
-		sed -n '/^console=/ s|.*=\(ttyS\?[0-9]\+\).*|/dev/\1|p' |
-		head -n-1
+ tr ' ' '\n' </proc/cmdline |
+  sed -n '/^console=/ s|.*=\(ttyS\?[0-9]\+\).*|/dev/\1|p' |
+  head -n-1
 )
 
 reason='docker exited with an error'
 docker run --privileged -ti \
-	-h "${hardware_id}" \
-	-e "container_uuid=$id" \
-	-e "RLOGHOST=$tinkerbell" \
-	-v /dev:/dev \
-	-v /dev/console:/dev/console \
-	-v /lib/firmware:/lib/firmware:ro \
-	-v "/lib/modules/$(uname -r):/lib/modules/$(uname -r)" \
-	-v "$metadata:/metadata:ro" \
-	-v "$userdata:/userdata:ro" \
-	-v "${statedir}:/statedir" \
-	--net host \
-	"osie:$arch" $script -M /metadata -u /userdata | (
-	# shellcheck disable=SC2086
-	tee $other_consoles
+ -h "${hardware_id}" \
+ -e "container_uuid=$id" \
+ -e "RLOGHOST=$tinkerbell" \
+ -v /dev:/dev \
+ -v /dev/console:/dev/console \
+ -v /lib/firmware:/lib/firmware:ro \
+ -v "/lib/modules/$(uname -r):/lib/modules/$(uname -r)" \
+ -v "$metadata:/metadata:ro" \
+ -v "$userdata:/userdata:ro" \
+ -v "${statedir}:/statedir" \
+ --net host \
+ "osie:$arch" $script -M /metadata -u /userdata | (
+ # shellcheck disable=SC2086
+ tee $other_consoles
 )
 
 reason='cleanup.sh is not executable'
 # shellcheck disable=SC2169
 if [ -x "$statedir/cleanup.sh" ]; then
-	reason='cleanup.sh did not finish correctly'
-	cd "$statedir"
-	exec ./cleanup.sh
+ reason='cleanup.sh did not finish correctly'
+ cd "$statedir"
+ exec ./cleanup.sh
 fi

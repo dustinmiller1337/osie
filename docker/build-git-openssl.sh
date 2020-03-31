@@ -34,11 +34,11 @@ apt-get source git
 	sed "s|-.*|-${debv}packethost1) osie; urgency=medium|" debian/changelog |
 		head -n1 >debian/changelog.tmp
 	cat >>debian/changelog.tmp <<-EOF
-		
+
 		  * rebuild with openssl instead of gnutls
-		
+
 		 -- OSIE Builder <osie-builder@localhost>  $(date +'%a, %d %b %Y %T %z')
-		
+
 	EOF
 	cat debian/changelog.tmp debian/changelog >debian/changelog.next
 	mv debian/changelog.next debian/changelog
