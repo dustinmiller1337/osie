@@ -171,49 +171,49 @@ if [[ $DOS == "SUSELINUX" ]] || [[ $DOS == "SUSE" ]]; then
 		Description=Initial packet-license activation helper
 		Requires=network.target
 		Before=cloud-init.service
-
+		
 		[Service]
 		Type=oneshot
 		ExecStart=/usr/bin/packet-license
 		TimeoutSec=0
 		StandardOutput=journal+console
-
+		
 		[Install]
 		WantedBy=multi-user.target
 	EOF_UNIT
 
 	cat <<-'EOF_pl' >"$TARGET/usr/bin/packet-license"
 		#!/bin/bash
-
+		
 		smtcrtshafile="/var/cache/smt-remote.crt.sha"
 		smtserverfile="/var/cache/smt-server"
-
+		
 		if [ -f $smtcrtshafile ]; then
 			casha=$(cat $smtcrtshafile)
 		else
 			echo "Could not find SMT cert file: $smtcrtshafile"
 		fi
-
+		
 		if [ -f $smtserverfile ]; then
 			smtserver=$(cat $smtserverfile)
 		else
 			echo "Could not find SMT server file: $smtserverfile"
 		fi
-
+		
 		# syntax: fail 1.2.3.4 '{"fail":"something is wrong"}'
 		function fail() {
 			local tink_host=$1
 			shift
-
+		
 			puttink "${tink_host}" phone-home '{"type":"failure", "reason":"'"$1"'"}'
 		}
-
+		
 		# syntax: puttink 1.2.3.4 phone-home '{"this": "data"}'
 		function puttink() {
 			local tink_host=$1
 			local endpoint=$2
 			local post_data=$3
-
+		
 			curl \
 				-f \
 				-vvvvv \
@@ -222,7 +222,7 @@ if [[ $DOS == "SUSELINUX" ]] || [[ $DOS == "SUSE" ]]; then
 				-d "${post_data}" \
 				"${tink_host}/${endpoint}"
 		}
-
+		
 		function register_smt () {
 			local smt_server=$1
 			local casha_fingerprint=$2
@@ -230,11 +230,11 @@ if [[ $DOS == "SUSELINUX" ]] || [[ $DOS == "SUSE" ]]; then
 			local retries=10
 			local wait_retry=5
 			local act_status=0
-
+		
 			# Clean and deregister first
 			SUSEConnect --de-register
 			SUSEConnect --cleanup
-
+		
 				for i in $(seq 1 $retries); do
 					echo "$command"
 					$command
@@ -260,7 +260,7 @@ if [[ $DOS == "SUSELINUX" ]] || [[ $DOS == "SUSE" ]]; then
 				rm -f $smtcrtshafile
 				rm -f $smtserverfile
 		}
-
+		
 		register_smt "$smtserver" "$casha"
 	EOF_pl
 	chmod +x "$TARGET/usr/bin/packet-license"
