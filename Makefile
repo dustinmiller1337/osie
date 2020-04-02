@@ -16,7 +16,7 @@ SHELL := bash
 .SUFFIXES:
 MAKEFLAGS +=  --no-builtin-rules
 
-v := $(shell git describe --dirty)
+v := $(shell git describe --always)
 ifeq (-g,$(findstring -g,$v))
 build_git_version := true
 endif
