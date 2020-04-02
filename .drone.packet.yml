@@ -84,6 +84,9 @@ pipeline:
 
   codecov:
     image: plugins/codecov
+    when:
+      event:
+        - tag
     secrets: [codecov_token]
 
   package_common:
