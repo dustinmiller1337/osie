@@ -55,7 +55,7 @@ teardown_forwarding() {
 
 make_disk() {
 	truncate -s0 "$disk"
-	truncate -s32G "$disk"
+	truncate -s50G "$disk"
 }
 
 gen_metadata() {
